@@ -36,6 +36,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -46,6 +47,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MapViewPager extends FrameLayout implements OnMapReadyCallback {
+
+
 
     public interface Callback {
         void onMapViewPagerReady();
@@ -72,6 +75,7 @@ public class MapViewPager extends FrameLayout implements OnMapReadyCallback {
         public abstract String getMarkerTitle(int page, int position);
     }
 
+    private BitmapDescriptor mCustomMarkerIcon;
 
     private static final float DEFAULT_ALPHA = 0.4f;
     private float markersAlpha = DEFAULT_ALPHA;
@@ -348,10 +352,13 @@ public class MapViewPager extends FrameLayout implements OnMapReadyCallback {
 
     private MarkerOptions createMarkerOptions(CameraPosition cp, String title) {
         if (cp == null || cp.target == null) return null;
+        if(mCustomMarkerIcon == null){
+            mCustomMarkerIcon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+        }
         return new MarkerOptions()
                 .position(new LatLng(cp.target.latitude, cp.target.longitude))
                 .title(title)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                .icon(mCustomMarkerIcon);
     }
 
     private void showMarkers() {
@@ -486,6 +493,7 @@ public class MapViewPager extends FrameLayout implements OnMapReadyCallback {
         mapPaddingTop = builder.mapPaddingTop;
         mapPaddingRight = builder.mapPaddingRight;
         mapPaddingBottom = builder.mapPaddingBottom;
+        mCustomMarkerIcon = builder.markerBitmap;
         mapOffset = builder.mapOffset != 0 ? builder.mapOffset : dp(32);
         mapFragment.getMapAsync(this);
     }
@@ -501,6 +509,7 @@ public class MapViewPager extends FrameLayout implements OnMapReadyCallback {
         private float markersAlpha = DEFAULT_ALPHA;
         private int mapOffset;
         private int mapPaddingLeft, mapPaddingTop, mapPaddingRight, mapPaddingBottom;
+        private BitmapDescriptor markerBitmap;
 
         public Builder(@NonNull Context context) {
             this.context = context;
@@ -541,6 +550,11 @@ public class MapViewPager extends FrameLayout implements OnMapReadyCallback {
             return this;
         }
 
+        public Builder icon(BitmapDescriptor markerBitmap){
+            this.markerBitmap = markerBitmap;
+            return this;
+        }
+
         public Builder mapPadding(int mapPaddingLeft,
                                   int mapPaddingTop,
                                   int mapPaddingRight,
@@ -551,6 +565,8 @@ public class MapViewPager extends FrameLayout implements OnMapReadyCallback {
             this.mapPaddingBottom = mapPaddingBottom;
             return this;
         }
+
+
 
         public MapViewPager build() {
             return new MapViewPager(this, context);
